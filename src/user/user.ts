@@ -8,7 +8,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
@@ -17,10 +17,10 @@ export class User {
   @Column()
   birthdate: string;
 
-  @Column()
+  @Column({ default: true })
   status: boolean;
 
-  @Column()
+  @Column({ default: false })
   isDeleted: boolean;
 
   public static create(
