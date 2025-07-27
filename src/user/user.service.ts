@@ -26,11 +26,13 @@ export class UserService {
   }
 
   getUsersByName(name: string): User[] {
-    return this.usersList.filter((u) => u.name === name);
+    return this.usersList.filter((u) =>
+      u.name.toLowerCase().includes(name.toLowerCase()),
+    );
   }
 
   deleteUser(name: string): boolean {
-    const user = this.usersList.find((u) => (user.name = name));
+    const user = this.usersList.find((u) => (u.name = name));
     let result = false;
     if (user) {
       user.isDeleted = true;

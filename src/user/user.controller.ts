@@ -24,16 +24,21 @@ Un usuario tiene nombre, email, password, fecha de nacimiento y estado.
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Post('login')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  login(@Body() userLoginDto: UserLoginDto): boolean {
+    return this.userService.loginUser(userLoginDto);
+  }
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
   newUser(@Body() userDto: UserCreateDto): User {
     return this.userService.newUser(userDto);
   }
 
-  @Post('login')
+  @Get(':name')
   @UsePipes(new ValidationPipe({ transform: true }))
-  login(@Body() userLoginDto: UserLoginDto): boolean {
-    return this.userService.loginUser(userLoginDto);
+  getUsersByUser(@Param('name') name: string): User[] {
+    return this.userService.getUsersByName(name);
   }
 
   @Get()
