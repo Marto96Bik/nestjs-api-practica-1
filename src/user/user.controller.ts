@@ -8,6 +8,7 @@ import {
   ValidationPipe,
   Delete,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user';
@@ -35,9 +36,8 @@ export class UserController {
     return this.userService.newUser(userDto);
   }
 
-  @Get(':name')
-  @UsePipes(new ValidationPipe({ transform: true }))
-  getUsersByUser(@Param('name') name: string): User[] {
+  @Get(':search')
+  getUsersByUser(@Query('name') name: string): User[] {
     return this.userService.getUsersByName(name);
   }
 
