@@ -32,7 +32,7 @@ export class UserController {
   }
   @Post()
   @UsePipes(new ValidationPipe({ transform: true }))
-  newUser(@Body() userDto: UserCreateDto): User {
+  newUser(@Body() userDto: UserCreateDto): Promise<User> {
     return this.userService.newUser(userDto);
   }
 
