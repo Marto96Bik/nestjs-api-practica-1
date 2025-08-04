@@ -12,8 +12,10 @@ export class UserService {
   constructor(private readonly userRepo: Repository<User>) {}
   private usersList: User[] = [];
 
-  newUser(userDto: UserCreateDto) {
-    const newUser = User.create(
+  async newUser(userDto: UserCreateDto) : Promise<User> {
+    const newUser = this.userRepo.create(userDto);
+    return await this.userRepo.save(newUser);
+    /* const newUser = User.create(
       userDto.name,
       userDto.email,
       userDto.password,
@@ -23,6 +25,7 @@ export class UserService {
     );
     this.usersList.push(newUser);
     return newUser;
+    */
   }
 
   getUsers(): User[] {
