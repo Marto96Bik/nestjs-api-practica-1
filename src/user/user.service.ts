@@ -5,6 +5,7 @@ import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { error } from 'console';
 
 @Injectable()
 export class UserService {
@@ -43,14 +44,16 @@ export class UserService {
     });
   }
 
-  deleteUser(name: string): boolean {
-    const user = this.usersList.find((u) => (u.name = name));
-    let result = false;
+  async deleteUser(name: String): Promise<void> {
+    //const user = this.usersList.find((u) => (u.name = name));
+    const user = await this.userRepo.findOneBy({ name: Like(`%${name}%`) });
+
     if (user) {
-      user.isDeleted = true;
-      result = true;
+      //user.isDeleted = true;
+      await this.userRepo.update(user.id, { isDeleted: false });
+    } else {
+      throw new NotFoundException(`No se encontro el usuario: ${name}`);
     }
-    return result;
   }
 
   loginUser(userLoginDto: UserLoginDto): boolean {
