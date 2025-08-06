@@ -30,8 +30,8 @@ export class UserService {
     */
   }
 
-  getUsers(): User[] {
-    return this.usersList;
+  async getUsers(): Promise<User[]> {
+    return await this.userRepo.find();
   }
 
   getUsersByName(name: string): User[] {
