@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
@@ -34,10 +34,13 @@ export class UserService {
     return await this.userRepo.find();
   }
 
-  getUsersByName(name: string): User[] {
-    return this.usersList.filter((u) =>
+  async getUsersByName(name: string): Promise<User[]> {
+    /*return this.usersList.filter((u) =>
       u.name.toLowerCase().includes(name.toLowerCase()),
-    );
+    );*/
+    return await this.userRepo.find({
+      where: { name: Like(`%${name}%`) },
+    });
   }
 
   deleteUser(name: string): boolean {
