@@ -64,8 +64,21 @@ export class UserService {
     return !!user;
   }
 
-  updateUser(name: string, updateData: userUpdateDto): User {
-    const user = this.usersList.find((u) => u.name === name);
+  async updateUser(name: string, updateData: userUpdateDto): Promise<void> {
+    const user = await this.userRepo.findOneBy({ name: Like(`%${name}%`) });
+
+    if (user) {
+      await this.userRepo.update(user.id, {
+        email: updateData.email,
+        password: updateData.password,
+        birthdate: updateData.birthdate,
+        status: updateData.status,
+      });
+    } else {
+      throw new NotFoundException(`No se encontro el usuario: ${name}`);
+    }
+
+    /*const user = this.usersList.find((u) => u.name === name);
     if (!user) throw new NotFoundException('Usuario no encontrado');
 
     if (updateData.email) user.email = updateData.email;
@@ -73,6 +86,6 @@ export class UserService {
     if (updateData.birthdate) user.birthdate = updateData.birthdate;
     if (updateData.status) user.status = updateData.status;
 
-    return user;
+    return user;*/
   }
 }
