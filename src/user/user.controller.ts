@@ -37,26 +37,26 @@ export class UserController {
   }
 
   @Get(':search')
-  getUsersByUser(@Query('name') name: string): User[] {
-    return this.userService.getUsersByName(name);
+  async getUsersByUser(@Query('name') name: string): Promise<User[]> {
+    return await this.userService.getUsersByName(name);
   }
 
   @Get()
-  getUsers(): User[] {
-    return this.userService.getUsers();
+  async getUsers(): Promise<User[]> {
+    return await this.userService.getUsers();
   }
 
   @Delete(':name')
-  deleteUser(@Param('name') name: string): boolean {
-    return this.userService.deleteUser(name);
+  async deleteUser(@Param('name') name: string): Promise<void> {
+    return await this.userService.deleteUser(name);
   }
 
   @Patch(':name')
   @UsePipes(new ValidationPipe({ transform: true }))
-  updateUser(
+  async updateUser(
     @Param('name') name: string,
     @Body() updateData: userUpdateDto,
-  ): User {
-    return this.userService.updateUser(name, updateData);
+  ): Promise<void> {
+    return await this.userService.updateUser(name, updateData);
   }
 }
