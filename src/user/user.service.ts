@@ -5,7 +5,6 @@ import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { error } from 'console';
 
 @Injectable()
 export class UserService {
