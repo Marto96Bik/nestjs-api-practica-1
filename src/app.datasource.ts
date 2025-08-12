@@ -1,6 +1,6 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
-export const AppDataSource = new DataSource({
+export const AppDataSourceOptions: DataSourceOptions = {
   type: 'mysql',
   host: 'localhost',
   port: 3306,
@@ -11,4 +11,6 @@ export const AppDataSource = new DataSource({
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
   synchronize: false,
   logging: true,
-});
+};
+
+export const AppDataSource = new DataSource(AppDataSourceOptions);
