@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
-import { userUpdateDto } from './dto/userUpdate.dt';
+import { userUpdateDto } from './dto/userUpdate.dto';
 
 /*
 Hacer tres endpoint con NestJS para crear, listar y eliminar usuarios.

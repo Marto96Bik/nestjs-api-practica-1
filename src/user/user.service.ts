@@ -3,7 +3,7 @@ import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
-import { userUpdateDto } from './dto/userUpdate.dt';
+import { userUpdateDto } from './dto/userUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
