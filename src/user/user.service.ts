@@ -5,7 +5,6 @@ import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { generateRandomToken } from '../utils/token.util';
 
 @Injectable()
 export class UserService {
@@ -61,9 +60,6 @@ export class UserService {
       (u) =>
         u.email === userLoginDto.email && u.password === userLoginDto.password,
     );
-    user.token = generateRandomToken();
-    user.tokenDate = new Date();
-    await this.userRepository.save(user);
     return !!user;
   }
 

@@ -24,10 +24,10 @@ export class User {
   isDeleted: boolean;
 
   @Column({ type: 'text', nullable: true })
-  token?: string | null;
+  token: string | null;
 
   @Column({ type: 'datetime', nullable: true })
-  token_created_at?: Date | null;
+  tokenDate: Date | null;
 
   public static create(
     name: string,
