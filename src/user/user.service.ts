@@ -5,6 +5,7 @@ import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { generateRandomToken } from 'src/utils/token.util';
 
 @Injectable()
 export class UserService {
@@ -55,12 +56,16 @@ export class UserService {
     }
   }
 
-  loginUser(userLoginDto: UserLoginDto): boolean {
+  async loginUser(userLoginDto: UserLoginDto): Promise<void> {
     const user = this.usersList.find(
       (u) =>
         u.email === userLoginDto.email && u.password === userLoginDto.password,
     );
-    return !!user;
+    if (user) {
+      user.token = generateRandomToken();
+      user.tokenDate = new Date();
+      await this.userRepo.save(user);
+    }
   }
 
   async updateUser(name: string, updateData: userUpdateDto): Promise<void> {
