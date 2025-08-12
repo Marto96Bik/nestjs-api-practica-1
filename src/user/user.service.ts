@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
@@ -56,16 +60,25 @@ export class UserService {
     }
   }
 
-  async loginUser(userLoginDto: UserLoginDto): Promise<void> {
-    const user = this.usersList.find(
-      (u) =>
-        u.email === userLoginDto.email && u.password === userLoginDto.password,
-    );
-    if (user) {
-      user.token = generateRandomToken();
-      user.tokenDate = new Date();
-      await this.userRepo.save(user);
+  async loginUser(userLoginDto: UserLoginDto) {
+    const user = await this.userRepo.findOne({
+      where: { email: userLoginDto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('No existe el usuario');
     }
+
+    if (userLoginDto.password !== user.password) {
+      throw new UnauthorizedException('Password incorrecto');
+    }
+
+    user.token = generateRandomToken();
+    user.tokenDate = new Date();
+
+    await this.userRepo.save(user);
+
+    return { token: user.token };
   }
 
   async updateUser(name: string, updateData: userUpdateDto): Promise<void> {

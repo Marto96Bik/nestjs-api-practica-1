@@ -27,7 +27,7 @@ export class UserController {
 
   @Post('login')
   @UsePipes(new ValidationPipe({ transform: true }))
-  login(@Body() userLoginDto: UserLoginDto): Promise<void> {
+  login(@Body() userLoginDto: UserLoginDto) {
     return this.userService.loginUser(userLoginDto);
   }
   @Post()
