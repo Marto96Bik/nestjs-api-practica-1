@@ -1,16 +1,11 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppDataSource } from './app.datasource';
+import { AppDataSourceOptions } from './app.datasource';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forRoot(AppDataSource.options)],
+  imports: [UserModule, TypeOrmModule.forRoot(AppDataSourceOptions)],
   controllers: [],
-  providers: [
-    {
-      provide: 'AppDataSource',
-      useFactory: async () => AppDataSource,
-    },
-  ],
+  providers: [],
 })
 export class AppModule {}
