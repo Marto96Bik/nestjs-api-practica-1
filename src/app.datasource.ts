@@ -7,8 +7,8 @@ export const AppDataSourceOptions: DataSourceOptions = {
   username: 'root',
   password: 'root',
   database: 'nestjs-api-practica-1-db',
-  entities: [__dirname + '/../**/*.entity.ts'],
-  migrations: [__dirname + '/../migrations/*.ts'],
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  migrations: ['dist/migrations/*.js'],
   synchronize: false,
   logging: true,
 };

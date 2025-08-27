@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Body,
+  Headers,
   Param,
   Post,
   UsePipes,
@@ -15,11 +16,6 @@ import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dto';
-
-/*
-Hacer tres endpoint con NestJS para crear, listar y eliminar usuarios.
-Un usuario tiene nombre, email, password, fecha de nacimiento y estado.
-*/
 
 @Controller('users')
 export class UserController {
@@ -37,18 +33,24 @@ export class UserController {
   }
 
   @Get(':search')
-  async getUsersByUser(@Query('name') name: string): Promise<User[]> {
-    return await this.userService.getUsersByName(name);
+  async getUsersByUser(
+    @Query('name') name: string,
+    @Headers('authorization') token: string,
+  ): Promise<User[]> {
+    return await this.userService.getUsersByName(name, token);
   }
 
   @Get()
-  async getUsers(): Promise<User[]> {
-    return await this.userService.getUsers();
+  async getUsers(@Headers('authorization') token: string): Promise<User[]> {
+    return await this.userService.getUsers(token);
   }
 
   @Delete(':name')
-  async deleteUser(@Param('name') name: string): Promise<void> {
-    return await this.userService.deleteUser(name);
+  async deleteUser(
+    @Param('name') name: string,
+    @Headers('authorization') token: string,
+  ) {
+    return await this.userService.deleteUser(name, token);
   }
 
   @Patch(':name')
@@ -56,7 +58,8 @@ export class UserController {
   async updateUser(
     @Param('name') name: string,
     @Body() updateData: userUpdateDto,
-  ): Promise<void> {
-    return await this.userService.updateUser(name, updateData);
+    @Headers('authorization') token: string,
+  ) {
+    return await this.userService.updateUser(name, token, updateData);
   }
 }

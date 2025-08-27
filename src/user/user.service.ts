@@ -1,108 +1,79 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Like, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { generateRandomToken } from 'src/utils/token.util';
+import { UserDao } from './user.dao';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-  ) {}
-  private usersList: User[] = [];
+  constructor(private readonly userDao: UserDao) {}
 
-  async newUser(userDto: UserCreateDto): Promise<User> {
-    const newUser = this.userRepo.create(userDto);
-    return await this.userRepo.save(newUser);
-    /* const newUser = User.create(
-      userDto.name,
-      userDto.email,
-      userDto.password,
-      userDto.birthdate,
-      userDto.state,
-      userDto.isDeleted,
-    );
-    this.usersList.push(newUser);
-    return newUser;
-    */
-  }
+  async validateToken(token: string): Promise<boolean> {
+    const user = await this.userDao.validateToken(token);
+    const today = new Date();
 
-  async getUsers(): Promise<User[]> {
-    return await this.userRepo.find();
-  }
-
-  async getUsersByName(name: string): Promise<User[]> {
-    /*return this.usersList.filter((u) =>
-      u.name.toLowerCase().includes(name.toLowerCase()),
-    );*/
-    return await this.userRepo.find({
-      where: { name: Like(`%${name}%`) },
-    });
-  }
-
-  async deleteUser(name: String): Promise<void> {
-    //const user = this.usersList.find((u) => (u.name = name));
-    const user = await this.userRepo.findOneBy({ name: Like(`%${name}%`) });
-
-    if (user) {
-      //user.isDeleted = true;
-      await this.userRepo.update(user.id, { isDeleted: false });
+    if (user?.tokenDate) {
+      const diffMin =
+        Math.abs(today.getTime() - user.tokenDate.getTime()) / 60000;
+      console.log(diffMin);
+      if (diffMin > 5) {
+        throw new ForbiddenException('Debe logearse para realizar esta accion');
+      }
     } else {
-      throw new NotFoundException(`No se encontro el usuario: ${name}`);
+      throw new ForbiddenException('Debe logearse para realizar esta accion');
     }
+    return true;
   }
 
   async loginUser(userLoginDto: UserLoginDto) {
-    const user = await this.userRepo.findOne({
-      where: { email: userLoginDto.email },
+    const user = await this.userDao.getUser({
+      email: userLoginDto.email,
     });
-
-    if (!user) {
-      throw new NotFoundException('No existe el usuario');
-    }
 
     if (userLoginDto.password !== user.password) {
       throw new UnauthorizedException('Password incorrecto');
     }
 
-    user.token = generateRandomToken();
-    user.tokenDate = new Date();
-
-    await this.userRepo.save(user);
-
-    return { token: user.token };
+    const newToken = generateRandomToken();
+    return await this.userDao.login(user, newToken);
   }
 
-  async updateUser(name: string, updateData: userUpdateDto): Promise<void> {
-    const user = await this.userRepo.findOneBy({ name: Like(`%${name}%`) });
+  async newUser(userDto: UserCreateDto): Promise<User> {
+    return await this.userDao.newUser(userDto);
+  }
 
-    if (user) {
-      await this.userRepo.update(user.id, {
-        email: updateData.email,
-        password: updateData.password,
-        birthdate: updateData.birthdate,
-        status: updateData.status,
-      });
-    } else {
-      throw new NotFoundException(`No se encontro el usuario: ${name}`);
+  async getUsers(token: string): Promise<User[]> {
+    await this.validateToken(token);
+    return await this.userDao.getUsersList();
+  }
+
+  async getUsersByName(name: string, token: string): Promise<User[]> {
+    await this.validateToken(token);
+    const user = await this.userDao.getUsersList(name);
+    if (!user) {
+      throw new NotFoundException('No se encontro el usuario');
     }
+    return user;
+  }
 
-    /*const user = this.usersList.find((u) => u.name === name);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+  async deleteUser(name: string, token: string) {
+    await this.validateToken(token);
+    return await this.userDao.deleteUser(name);
+  }
 
-    if (updateData.email) user.email = updateData.email;
-    if (updateData.password) user.password = updateData.password;
-    if (updateData.birthdate) user.birthdate = updateData.birthdate;
-    if (updateData.status) user.status = updateData.status;
-
-    return user;*/
+  async updateUser(
+    name: string,
+    token: string,
+    updateData: userUpdateDto,
+  ): Promise<void> {
+    await this.validateToken(token);
+    await this.userDao.updateUser({ name, updateData });
   }
 }

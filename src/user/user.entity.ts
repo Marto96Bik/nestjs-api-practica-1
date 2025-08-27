@@ -34,16 +34,20 @@ export class User {
     email: string,
     password: string,
     birthdate: string,
-    status: boolean,
-    isDeleted: boolean,
+    status?: boolean,
+    isDeleted?: boolean,
+    token?: string,
+    tokenDate?: Date,
   ): User {
     const user = new User();
     user.name = name;
     user.email = email;
     user.password = password;
     user.birthdate = birthdate;
-    user.status = status;
-    user.isDeleted = isDeleted;
+    if (status) user.status = status;
+    if (isDeleted) user.isDeleted = isDeleted;
+    if (token) user.token = token;
+    if (tokenDate) user.tokenDate = tokenDate;
     return user;
   }
 }
