@@ -4,6 +4,7 @@ import {
   IsStrongPassword,
   IsDateString,
   IsBoolean,
+  IsOptional,
 } from 'class-validator';
 
 export class UserCreateDto {
@@ -18,10 +19,4 @@ export class UserCreateDto {
 
   @IsDateString()
   birthdate: string;
-
-  @IsBoolean()
-  state: boolean;
-
-  @IsBoolean()
-  isDeleted: boolean;
 }

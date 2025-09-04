@@ -1,63 +1,79 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from './user';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
-import { userUpdateDto } from './dto/userUpdate.dt';
+import { userUpdateDto } from './dto/userUpdate.dto';
+import { generateRandomToken } from 'src/utils/token.util';
+import { UserDao } from './user.dao';
 
 @Injectable()
 export class UserService {
-  private usersList: User[] = [];
+  constructor(private readonly userDao: UserDao) {}
 
-  newUser(userDto: UserCreateDto) {
-    const newUser = User.create(
-      userDto.name,
-      userDto.email,
-      userDto.password,
-      userDto.birthdate,
-      userDto.state,
-      userDto.isDeleted,
-    );
-    this.usersList.push(newUser);
-    return newUser;
-  }
+  async validateToken(token: string): Promise<boolean> {
+    const user = await this.userDao.validateToken(token);
+    const today = new Date();
 
-  getUsers(): User[] {
-    return this.usersList;
-  }
-
-  getUsersByName(name: string): User[] {
-    return this.usersList.filter((u) =>
-      u.name.toLowerCase().includes(name.toLowerCase()),
-    );
-  }
-
-  deleteUser(name: string): boolean {
-    const user = this.usersList.find((u) => (u.name = name));
-    let result = false;
-    if (user) {
-      user.isDeleted = true;
-      result = true;
+    if (user?.tokenDate) {
+      const diffMin =
+        Math.abs(today.getTime() - user.tokenDate.getTime()) / 60000;
+      console.log(diffMin);
+      if (diffMin > 5) {
+        throw new ForbiddenException('Debe logearse para realizar esta accion');
+      }
+    } else {
+      throw new ForbiddenException('Debe logearse para realizar esta accion');
     }
-    return result;
+    return true;
   }
 
-  loginUser(userLoginDto: UserLoginDto): boolean {
-    const user = this.usersList.find(
-      (u) =>
-        u.email === userLoginDto.email && u.password === userLoginDto.password,
-    );
-    return !!user;
+  async loginUser(userLoginDto: UserLoginDto) {
+    const user = await this.userDao.getUser({
+      email: userLoginDto.email,
+    });
+
+    if (userLoginDto.password !== user.password) {
+      throw new UnauthorizedException('Password incorrecto');
+    }
+
+    const newToken = generateRandomToken();
+    return await this.userDao.login(user, newToken);
   }
 
-  updateUser(name: string, updateData: userUpdateDto): User {
-    const user = this.usersList.find((u) => u.name === name);
-    if (!user) throw new NotFoundException('Usuario no encontrado');
+  async newUser(userDto: UserCreateDto): Promise<User> {
+    return await this.userDao.newUser(userDto);
+  }
 
-    if (updateData.email) user.email = updateData.email;
-    if (updateData.password) user.password = updateData.password;
-    if (updateData.birthdate) user.birthdate = updateData.birthdate;
-    if (updateData.status) user.status = updateData.status;
+  async getUsers(token: string): Promise<User[]> {
+    await this.validateToken(token);
+    return await this.userDao.getUsersList();
+  }
 
+  async getUsersByName(name: string, token: string): Promise<User[]> {
+    await this.validateToken(token);
+    const user = await this.userDao.getUsersList(name);
+    if (!user) {
+      throw new NotFoundException('No se encontro el usuario');
+    }
     return user;
+  }
+
+  async deleteUser(name: string, token: string) {
+    await this.validateToken(token);
+    return await this.userDao.deleteUser(name);
+  }
+
+  async updateUser(
+    name: string,
+    token: string,
+    updateData: userUpdateDto,
+  ): Promise<void> {
+    await this.validateToken(token);
+    await this.userDao.updateUser({ name, updateData });
   }
 }

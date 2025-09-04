@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Body,
+  Headers,
   Param,
   Post,
   UsePipes,
@@ -9,54 +10,66 @@ import {
   Delete,
   Patch,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from './user';
+import { User } from './user.entity';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { UserLoginDto } from './dto/userLogin.dto';
-import { userUpdateDto } from './dto/userUpdate.dt';
-
-/*
-Hacer tres endpoint con NestJS para crear, listar y eliminar usuarios.
-Un usuario tiene nombre, email, password, fecha de nacimiento y estado.
-*/
+import { userUpdateDto } from './dto/userUpdate.dto';
+import { CustomInterceptor } from '../common/interceptors/custom-response.interceptor';
+import { ResponseFormat } from '../common/decorators/response-format.decorator';
 
 @Controller('users')
+@UseInterceptors(CustomInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('login')
+  @ResponseFormat('default')
   @UsePipes(new ValidationPipe({ transform: true }))
-  login(@Body() userLoginDto: UserLoginDto): boolean {
+  login(@Body() userLoginDto: UserLoginDto) {
     return this.userService.loginUser(userLoginDto);
   }
   @Post()
+  @ResponseFormat('default')
   @UsePipes(new ValidationPipe({ transform: true }))
-  newUser(@Body() userDto: UserCreateDto): User {
+  async newUser(@Body() userDto: UserCreateDto): Promise<User> {
     return this.userService.newUser(userDto);
   }
 
   @Get(':search')
-  getUsersByUser(@Query('name') name: string): User[] {
-    return this.userService.getUsersByName(name);
+  @ResponseFormat('list')
+  async getUsersByUser(
+    @Query('name') name: string,
+    @Headers('authorization') token: string,
+  ): Promise<User[]> {
+    return await this.userService.getUsersByName(name, token);
   }
 
   @Get()
-  getUsers(): User[] {
-    return this.userService.getUsers();
+  @ResponseFormat('list')
+  async getUsers(@Headers('authorization') token: string): Promise<User[]> {
+    return await this.userService.getUsers(token);
   }
 
   @Delete(':name')
-  deleteUser(@Param('name') name: string): boolean {
-    return this.userService.deleteUser(name);
+  @ResponseFormat('default')
+  async deleteUser(
+    @Param('name') name: string,
+    @Headers('authorization') token: string,
+  ) {
+    return await this.userService.deleteUser(name, token);
   }
 
   @Patch(':name')
+  @ResponseFormat('default')
   @UsePipes(new ValidationPipe({ transform: true }))
-  updateUser(
+  async updateUser(
     @Param('name') name: string,
     @Body() updateData: userUpdateDto,
-  ): User {
-    return this.userService.updateUser(name, updateData);
+    @Headers('authorization') token: string,
+  ) {
+    return await this.userService.updateUser(name, token, updateData);
   }
 }
