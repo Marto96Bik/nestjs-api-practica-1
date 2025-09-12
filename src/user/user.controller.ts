@@ -11,6 +11,7 @@ import {
   Patch,
   Query,
   UseInterceptors,
+  UseFilters,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
@@ -19,9 +20,11 @@ import { UserLoginDto } from './dto/userLogin.dto';
 import { userUpdateDto } from './dto/userUpdate.dto';
 import { CustomInterceptor } from '../common/interceptors/custom-response.interceptor';
 import { ResponseFormat } from '../common/decorators/response-format.decorator';
+import { ExceptionsFilter } from 'src/common/exceptions/exceptions-filter.exception';
 
 @Controller('users')
 @UseInterceptors(CustomInterceptor)
+@UseFilters(ExceptionsFilter)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
